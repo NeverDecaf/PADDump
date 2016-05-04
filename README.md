@@ -12,8 +12,17 @@ These instructions are for iPhone but should be similar on android devices
   2. Open Safari and navigate to http://mitm.it (you must use safari, other browsers probably won't work.)
   3. Install the certificate for your device.
   4. Go back to wifi settings and turn off the HTTP Proxy.
-  5. Add your computer's IP to the DNS field, making sure it comes first (separate entires with commas)
-  > For example, if your IP is 192.168.1.20 and the default DNS was 192.168.1.1 you want the field to read "192.168.1.20, 192.168.1.1"
+  5. Change the DNS field to the IP address of your computer, but take a note of what it was before.
+  6. Change the DNS field back to the default once you finish using PADDump
+
+**You will need to repeat steps 5 and 6 every time you run PADDump**
+See _Automatic iPhone DNS Setup_ in the config to automate this process.  
+An easy way of automating this (with pretty severe consequences) is to *add* your computer's IP to the DNS field, rather than replacing it entirely.   
+For example, if your IP is 192.168.1.20 and the default DNS was 192.168.1.1 you want the field to read "192.168.1.20, 192.168.1.1"  
+Make sure your computer's IP is first or it won't work.  
+This method is not recommended unless you only use your device for PAD, and even then it can cause inconveniences.
+
+
 
 ####Config Options:
 ######[PADHerder Credentials]
@@ -28,6 +37,11 @@ you can get the json file here: http://gspread.readthedocs.org/en/latest/oauth2.
 The config requires the name of the file (of course put it in the same directory as PADDump)  
 You will also need to share your spreadsheet with the email of the drive account you made to get this key.  
 The mailbox data will go into the first worksheet so make sure theres nothing important there.  
+
+######[Automatic iPhone DNS Setup]
+If your phone is jailbroken you can have PADDump automatically change the wifi settings for you.  
+The one requirement is that you install "Network Commands" from cydia. (uses ifconfig)  
+You may also need to use an account with root access (not tested)  
 
 ####Tips
 You can paste/import the contents of pad_mails.csv into any spreadsheet program (including online ones)
