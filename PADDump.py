@@ -1,6 +1,9 @@
 '''
 SETUP:
-see readme.md
+install cert.
+add this computer's ip to dns list (must be first).
+
+See README.md for more detail.
 
 
 If you want a nice summary of your mailbox put this in another worksheet (change the "Mails" reference as needed)
@@ -24,10 +27,8 @@ If you want them to be more sorted, put this in A1 instead:
 '''
 
 '''
-dependencies: mitmproxy, gspread, requests, dnslib
+dependencies: mitmproxy, gspread, requests, dnslib, python-dateutil, pytz
 '''
-EXIT_AFTER_ADD = 0 # if true paddump will exit after one successful update. 
-
 import time
 import os
 ##import cffi#added just for pyinstaller's sake
@@ -74,6 +75,7 @@ def set_defaults(config):
     config.add_section(config_essentials)
     config.set(config_essentials,'padherder_username','yourusernamehere')
     config.set(config_essentials,'padherder_password','yourpasswordhere')
+    config.set(config_essentials,'run_continuously','0') # if 0, will exit after first successful update. otherwise will just run forever
     
     config.add_section(config_gsheets)
     config.set(config_gsheets,'json_key_file','')#oauth2 credentials for google drive http://gspread.readthedocs.org/en/latest/oauth2.html
@@ -270,7 +272,7 @@ class PadMaster(flow.FlowMaster):
 ##                self.mailbox_data=self.monster_data=None
                 a=[update_padherder(self.monster_data),update_mails(self.mailbox_data)]
                 self.mailbox_data=self.monster_data=None
-                if EXIT_AFTER_ADD:
+                if not CREDENTIALS['run_continuously']:
                     os._exit(0)
         return f
 
