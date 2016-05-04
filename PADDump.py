@@ -67,7 +67,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(('1.1.1.1', 0))
 Gateway = s.getsockname()[0]
 
-config_essentials = 'PADHerder Credentials (REQUIRED)'
+config_essentials = 'PADHerder Credentials'
 config_gsheets='Google Sheets Integration'
 def set_defaults(config):
     
