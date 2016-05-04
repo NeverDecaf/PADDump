@@ -167,7 +167,6 @@ class InterceptResolver(BaseResolver):
 ##            evt = custom_events.wxStatusEvent(message="Got DNS Request")
 ##            evt = custom_events.wxDNSEvent(message=str(qname)[:-1])
             self.onDNSEvent(str(qname)[:-1])
-            print(qname)
             time.sleep(0.5) # we need to sleep until the proxy is up, half a second should do it...
         # Otherwise proxy
         if not reply.rr:
