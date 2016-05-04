@@ -69,7 +69,6 @@ Gateway = s.getsockname()[0]
 
 config_essentials = 'PADHerder Credentials (REQUIRED)'
 config_gsheets='Google Sheets Integration'
-config_jailbreak = 'Automatic iPhone Gateway Setup'
 def set_defaults(config):
     
     config.add_section(config_essentials)
@@ -80,13 +79,6 @@ def set_defaults(config):
     config.add_section(config_gsheets)
     config.set(config_gsheets,'json_key_file','')#oauth2 credentials for google drive http://gspread.readthedocs.org/en/latest/oauth2.html
     config.set(config_gsheets,'spreadsheet_name','') # spreadsheet that will be automatically updated (the first worksheet will be overwritten)
-
-    
-    config.add_section(config_jailbreak)
-    config.set(config_jailbreak,'ssh_username','')#needs su privileges (i.e. root)
-    config.set(config_jailbreak,'ssh_password','')
-    config.set(config_jailbreak,'iphone_ip','')
-    config.set(config_jailbreak,'router_ip','')# ip of your default gateway, probably your router, probably already correct.
 
 def get_dict(config):
     return dict(config.items(config_essentials)+config.items(config_gsheets)+config.items(config_jailbreak))
@@ -362,6 +354,7 @@ def serveDNS(hostaddr):
 
     
 if __name__=='__main__':
+    print('Your IP is %s'%Gateway)
     app_config = proxy.ProxyConfig(port=8080, host=Gateway)
     app_server = ProxyServer(app_config)
     app_master = dump.DumpMaster(app_server, dump.Options(app_host='mitm.it', app_port=80, app=True))

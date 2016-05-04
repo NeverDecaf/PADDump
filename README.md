@@ -10,20 +10,21 @@ mitmproxy script for windows that collects puzzle and dragons monster box and ma
 
 ####Initial Phone Setup
 These instructions are for iPhone but should be similar on android devices
-  1. Go to Settings > Wifi > click the i > write down all the information you see.
-  2. Switch from "DHCP" to "Static" and fill all the fields in with the information you recorded.
-  3. Change the "Router" field to the IP of your computer (PADDump should display this for you)
-  4. Open Safari (non-default browsers may fail) and visit http://mitm.it
-  5. Install the certificate for your device.
-  6. After using PADDump you must go back to Wifi settings and change the "Router" field back to its default.
-    (You don't have to switch back to DHCP every time.)
+  1. Go to Settings > Wifi > click the i > set HTTP PROXY to manual and enter your IP under server and 8080 under Port (PADDump will display your IP)
+  2. Open Safari and navigate to http://mitm.it (you must use safari, other browsers probably won't work.)
+  3. Install the certificate for your device.
+  4. Go back to wifi settings and turn off the HTTP Proxy.
+  5. Add your computer's IP to the DNS field, making sure it comes first (separate entires with commas)
+  > For example, if your IP is 192.168.1.20 and the default DNS was 192.168.1.1 you want the field to read "192.168.1.20, 192.168.1.1"
 	
 For future runs all you need to do is step 3 and step 6 afterwards. This can also be automated if your phone is jailbroken (see below).
 
 ####Config Options:
-######[PADHerder Credentials (REQUIRED)]
+######[PADHerder Credentials]
 Simple, just put in your padherder username and password.
 This will allow paddump to automatically update your padherder.
+if run_continously is 0, PADDump will exit after the first successful update of your mail(box).
+For most cases you'll want to leave this at 0
 
 ######[Google Sheets Integration]
 If set up, PADDump can automatically fill in a google sheets spreadsheet with your mailbox data.
@@ -32,11 +33,5 @@ The config requires the name of the file (of course put it in the same directory
 You will also need to share your spreadsheet with the email of the drive account you made to get this key.
 The mailbox data will go into the first worksheet so make sure theres nothing important there.
 
-######[Automatic iPhone Gateway Setup]
-If your phone is jailbroken you can have PADDump automatically change the wifi settings for you.
-The one requirement is that you install "Network Commands" from cydia. (uses ifconfig)
-You may also need to use an account with root access (not tested)
-
 ####Tips
-You can paste/import hte contents of pad_mails.csv into any spreadsheet program (including online ones)
-You can also manually import padherder.json to padherder.
+You can paste/import the contents of pad_mails.csv into any spreadsheet program (including online ones)
