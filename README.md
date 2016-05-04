@@ -1,10 +1,8 @@
 # PADDump
-mitmproxy script for windows that collects puzzle and dragons monster box and mailbox data
-
 
 ####First Time Setup
   1. Run PadDump once to create the config file.
-  2. Fill in as much as you want (description in config options below)
+  2. Fill in as much of the config as you want (description in config options below)
   3. Restart PADDump
   4. Set up your phone (see the below section)
 
@@ -16,8 +14,6 @@ These instructions are for iPhone but should be similar on android devices
   4. Go back to wifi settings and turn off the HTTP Proxy.
   5. Add your computer's IP to the DNS field, making sure it comes first (separate entires with commas)
   > For example, if your IP is 192.168.1.20 and the default DNS was 192.168.1.1 you want the field to read "192.168.1.20, 192.168.1.1"
-	
-For future runs all you need to do is step 3 and step 6 afterwards. This can also be automated if your phone is jailbroken (see below).
 
 ####Config Options:
 ######[PADHerder Credentials]
