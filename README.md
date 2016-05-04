@@ -17,17 +17,17 @@ These instructions are for iPhone but should be similar on android devices
 
 ####Config Options:
 ######[PADHerder Credentials]
-Simple, just put in your padherder username and password.
-This will allow paddump to automatically update your padherder.
-if run_continously is 0, PADDump will exit after the first successful update of your mail(box).
-For most cases you'll want to leave this at 0
+Simple, just put in your padherder username and password.  
+This will allow paddump to automatically update your padherder.  
+if run_continously is 0, PADDump will exit after the first successful update of your mail(box).  
+For most cases you'll want to leave this at 0.  
 
 ######[Google Sheets Integration]
-If set up, PADDump can automatically fill in a google sheets spreadsheet with your mailbox data.
-you can get the json file here: http://gspread.readthedocs.org/en/latest/oauth2.html
-The config requires the name of the file (of course put it in the same directory as PADDump)
-You will also need to share your spreadsheet with the email of the drive account you made to get this key.
-The mailbox data will go into the first worksheet so make sure theres nothing important there.
+If set up, PADDump can automatically fill in a google sheets spreadsheet with your mailbox data.  
+you can get the json file here: http://gspread.readthedocs.org/en/latest/oauth2.html  
+The config requires the name of the file (of course put it in the same directory as PADDump)  
+You will also need to share your spreadsheet with the email of the drive account you made to get this key.  
+The mailbox data will go into the first worksheet so make sure theres nothing important there.  
 
 ####Tips
 You can paste/import the contents of pad_mails.csv into any spreadsheet program (including online ones)
