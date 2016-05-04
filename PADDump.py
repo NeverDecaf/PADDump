@@ -81,7 +81,7 @@ def set_defaults(config):
     config.set(config_gsheets,'spreadsheet_name','') # spreadsheet that will be automatically updated (the first worksheet will be overwritten)
 
 def get_dict(config):
-    return dict(config.items(config_essentials)+config.items(config_gsheets)+config.items(config_jailbreak))
+    return dict(config.items(config_essentials)+config.items(config_gsheets))
 
 Config = ConfigParser.ConfigParser()
 configfile='PADDumpConfig.ini'
