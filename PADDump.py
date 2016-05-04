@@ -1,18 +1,6 @@
 '''
 SETUP:
-make sure the variables below are correct. If usernames are blank output will be written to files instead of automatically uploaded.
-
-On first run, visit mitm.it on your phone and install the certificate.
-
-===== YOU MUST DO THE BELOW STEP *BEFORE* RUNNING THIS SCRIPT =====(could probably be made automatic in network.py)
-On your iphone wifi settings, change ip from DHCP to static and manually fill the fields to match the settings under DHCP
-You will need to change the "router" field to the ip address of this computer if you aren't jailbroken.
-
-IMPORTANT: if you are using ssh to switch your phones gateway automatically, you must install the network commands app in cydia
-
-share your google sheet with the email of your drive api account (give edit permission)
-(the data will be put into the first worksheet, so make sure theres nothing important in there)
-
+see readme.md
 
 
 If you want a nice summary of your mailbox put this in another worksheet (change the "Mails" reference as needed)
@@ -34,41 +22,38 @@ py count:
 If you want them to be more sorted, put this in A1 instead:
 =SORT(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A=""))),LEN(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A=""))),"y","")),False,LEN(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A=""))),"J","")),False,LEN(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A=""))),"T","")),False,LEN(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A="")))," ","")),True)
 '''
-'''
-dependencies: mitmproxy, gspread
-'''
-try:
-    import win32api
-    win32api.SetDllDirectory(sys._MEIPASS)
-except:
-    pass
 
+'''
+dependencies: mitmproxy, gspread, requests, dnslib
+'''
+EXIT_AFTER_ADD = 0 # if true paddump will exit after one successful update. 
 
-from mitmproxy.platform import windows
 import time
-import subprocess
 import os
-##mitmdump -T -s exploit.py
-from mitmproxy.models import decoded
-##from libmproxy.script import concurrent
-import cffi#added just for pyinstaller's sake
-
-import network
+##import cffi#added just for pyinstaller's sake
 import re
 from requests import session
-
 import json
 from oauth2client.client import SignedJwtAssertionCredentials
-import _winreg as wr
-import signal
 import ConfigParser
 from contextlib import closing
 import socket
-
 # extra modules
 import gspread
 import parsemails
-import admin
+
+"""http://code.activestate.com/recipes/491264-mini-fake-dns-server/"""
+
+import sys
+##import binascii,copy,struct, time
+from dnslib import DNSRecord,RR,QTYPE,RCODE,parse_time,A
+from dnslib.server import DNSServer,DNSHandler,BaseResolver,DNSLogger
+from dnslib.label import DNSLabel
+##import re
+
+from mitmproxy import controller, proxy, flow, dump, cmdline, contentviews
+from mitmproxy.proxy.server import ProxyServer
+import thread
 
 
 ####################################################
@@ -120,7 +105,7 @@ else:
 CREDENTIALS = get_dict(Config)
 
 ####################################################
-############### PROXY FUNCTIONS ####################
+############## UPDATE FUNCTIONS ####################
 ####################################################
 def update_mails(mails):
     if CREDENTIALS['json_key_file']:
@@ -189,41 +174,15 @@ def update_padherder(json_data):
             f.write(json_data)
 
 ####################################################
-################ UTIL FUNCTIONS ####################
+############### PROXY FUNCTIONS ####################
 ####################################################
-def launchWithoutConsole(command, args):
-    """Launches 'command' windowless and waits until finished"""
-    startupinfo = subprocess.STARTUPINFO()
-    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-##    with open(os.devnull,'w') as devnull:
-    return subprocess.Popen([command] + args, startupinfo=startupinfo).wait()
-
-
-
-"""http://code.activestate.com/recipes/491264-mini-fake-dns-server/"""
-
-import socket, sys
-import binascii,copy,struct, time
-from dnslib import DNSRecord,RR,QTYPE,RCODE,parse_time,A
-from dnslib.server import DNSServer,DNSHandler,BaseResolver,DNSLogger
-from dnslib.label import DNSLabel
-import re
-
-from mitmproxy import controller, proxy, flow, dump, cmdline, contentviews
-from mitmproxy.proxy.server import ProxyServer
-import thread
-
 parse_host_header = re.compile(r"^(?P<host>[^:]+|\[.+\])(?::(?P<port>\d+))?$")
 
 class PadMaster(flow.FlowMaster):
     def __init__(self, server, main_window, region):
         flow.FlowMaster.__init__(self, server, flow.State())
-##        self.status_ctrl = main_window.main_tab
-##        self.mail_tab = main_window.mail_tab
         self.region = region
         self.monster_data = self.mailbox_data = None
-        #self.start_app('mitm.it', 80)
-
 
     def run(self):
         try:
@@ -250,10 +209,7 @@ class PadMaster(flow.FlowMaster):
 
         f.request.host = sni or host_header
         f.request.port = port
-        print("Got HTTPS request, forwarding")
-##        evt = custom_events.wxStatusEvent(message="Got HTTPS request, forwarding")            
-##        wx.PostEvent(self.status_ctrl,evt)
-        
+        print("Got HTTPS request, forwarding")        
         flow.FlowMaster.handle_request(self, f)
         if f:
             f.reply()
@@ -306,20 +262,22 @@ class PadMaster(flow.FlowMaster):
                 cap.close()
                 
                 self.mailbox_data = content
-##                mails = parse_mail(content)
-##                mails.reverse()
                 print("Got mail data, processing...")
-##                evt = custom_events.wxMailEvent(mails=mails)
-##                wx.PostEvent(self.mail_tab, evt)
-##                evt = custom_events.wxStatusEvent(message="Got mail data, processing...")            
-##                wx.PostEvent(self.status_ctrl,evt)
-            if self.mailbox_data and self.monster_data:
-                thread.start_new_thread(lambda: [update_padherder(self.monster_data),update_mails(self.mailbox_data),sys.exit()],())
                 
+            if self.mailbox_data and self.monster_data:
+                # turns out this doesn't really need a separate thread.
+##                thread.start_new_thread(lambda: [update_padherder(self.monster_data),update_mails(self.mailbox_data),EXIT_AFTER_ADD and os._exit(0)],())
+##                self.mailbox_data=self.monster_data=None
+                a=[update_padherder(self.monster_data),update_mails(self.mailbox_data)]
+                self.mailbox_data=self.monster_data=None
+                if EXIT_AFTER_ADD:
+                    os._exit(0)
         return f
 
 
-
+####################################################
+################ DNS FUNCTIONS #####################
+####################################################
 class InterceptResolver(BaseResolver):
 
     """
@@ -348,13 +306,12 @@ class InterceptResolver(BaseResolver):
             region = 'NA'
         else:
             region = 'JP'
-        
-##        config = wx.ConfigBase.Get()
+            
         host = self.hostaddr
-        httpsport = "443"
+        httpsport = 443
 
         try:
-            proxy_config = proxy.ProxyConfig(port=int(httpsport), host=host, mode='reverse', upstream_server=cmdline.parse_server_spec('https://%s:443/' % message))
+            proxy_config = proxy.ProxyConfig(port=httpsport, host=host, mode='reverse', upstream_server=cmdline.parse_server_spec('https://%s:443/' % message))
             proxy_server = ProxyServer(proxy_config)
         except Exception as e:
             raise
@@ -367,11 +324,8 @@ class InterceptResolver(BaseResolver):
         qname = request.q.qname
         qtype = QTYPE[request.q.qtype]
         if qname.matchGlob("api-*padsv.gungho.jp."):
-##            config = wx.ConfigBase.Get()
             host = self.hostaddr
             reply.add_answer(RR(qname,QTYPE.A,rdata=A(host)))
-##            evt = custom_events.wxStatusEvent(message="Got DNS Request")
-##            evt = custom_events.wxDNSEvent(message=str(qname)[:-1])
             self.onDNSEvent(str(qname)[:-1])
             time.sleep(0.5) # we need to sleep until the proxy is up, half a second should do it...
         # Otherwise proxy
@@ -404,75 +358,7 @@ def serveDNS(hostaddr):
     except KeyboardInterrupt:
         sys.exit()
 
-
-
-
-
     
 if __name__=='__main__':
-    if not admin.isUserAdmin():
-        admin.runAsAdmin()
-        
-##    thread.start_new_thread(serveDNS, (Gateway,))
     serveDNS(Gateway)
-
-##    app_config = proxy.ProxyConfig(port=8080, host=Gateway)
-##    app_server = ProxyServer(app_config)
-##    app_master = dump.DumpMaster(app_server, dump.Options(app_host='mitm.it', app_port=80, app=True))
-##    thread.start_new_thread(app_master.run, ())
-
-##    app_master.run()
-    exit(0)
-        
-##    print(" * Setting up...")
-    print("\nPerforming setup tasks, close PAD on your phone while you wait.\n")
-    proxy = windows.TransparentProxy(mode='forward')
-    proxy.start()
-##    print(" * Transparent proxy active.")
-##    print("   Filter: {0}".format(proxy.request_filter))
-    try:
-        aKey = wr.CreateKey(wr.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters')
-        already_enabled = wr.QueryValueEx(aKey,'IPEnableRouter')[0]
-        if not already_enabled:
-            print("\n")
-            print("Visit mitm.it on your phone and install the certificate\nif this is your first time running this script.")
-            print("\n")
-            wr.SetValueEx(aKey,'IPEnableRouter',0,wr.REG_DWORD,1)
-            with open(os.devnull,'w') as devnull:
-                subprocess.call('sc stop remoteaccess', stdout = devnull, stderr = subprocess.STDOUT)
-                subprocess.call('sc config remoteaccess start= demand', stdout = devnull, stderr = subprocess.STDOUT)
-        wr.CloseKey(aKey)
-        with open(os.devnull,'w') as devnull:
-            subprocess.call('sc start remoteaccess', stdout = devnull, stderr = subprocess.STDOUT)
-        if CREDENTIALS['ssh_username']:
-            print("Restarting your phone's network adapter, please wait...")
-            network.change_router_ip(CREDENTIALS['iphone_ip'],Gateway,CREDENTIALS['ssh_username'],CREDENTIALS['ssh_password'])
-        else:
-            print("Change your phone's gateway to the ip of this computer (%s)."%Gateway)
-            
-        print("\nSetup complete! (re)Open PAD and press start now.\n")
-        launchWithoutConsole("mitmdump",['-T', '-q', '-s', os.path.realpath(__file__)])
-##        subprocess.call("mitmdump -T -s "+os.path.realpath(__file__))
-    except KeyboardInterrupt:
-        pass
-    finally:
-        time.sleep(5) # give your phone time to log into pad so you don't experience any errors
-##        print(" * Shutting down...")
-        try:
-            proxy.shutdown()
-        except Exception:
-            'you tried'
-        try:
-            with open(os.devnull,'w') as devnull:
-                subprocess.call('sc stop remoteaccess', stdout = devnull, stderr = subprocess.STDOUT)
-        except Exception:
-            'you tried'
-        try:
-            if CREDENTIALS['ssh_username']:
-                network.change_router_ip(CREDENTIALS['iphone_ip'],CREDENTIALS['router_ip'],CREDENTIALS['ssh_username'],CREDENTIALS['ssh_password'])
-            else:
-                print("\nChange your phone's gateway back to its default.")
-                time.sleep(10)
-##            print(" * Shut down.")
-        except Exception:
-            'good enough'
+    
