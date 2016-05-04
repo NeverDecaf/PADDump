@@ -1,6 +1,6 @@
 '''
 SETUP:
-install cert.
+install mitm cert.
 add this computer's ip to dns list (must be first).
 
 See README.md for more detail.
@@ -272,7 +272,7 @@ class PadMaster(flow.FlowMaster):
 ##                self.mailbox_data=self.monster_data=None
                 a=[update_padherder(self.monster_data),update_mails(self.mailbox_data)]
                 self.mailbox_data=self.monster_data=None
-                if not CREDENTIALS['run_continuously']:
+                if not CREDENTIALS['run_continuously'] or CREDENTIALS['run_continuously'] == '0' or CREDENTIALS['run_continuously'] == 'false' or CREDENTIALS['run_continuously'] == 'False':
                     os._exit(0)
         return f
 
@@ -362,5 +362,9 @@ def serveDNS(hostaddr):
 
     
 if __name__=='__main__':
+    app_config = proxy.ProxyConfig(port=8080, host=Gateway)
+    app_server = ProxyServer(app_config)
+    app_master = dump.DumpMaster(app_server, dump.Options(app_host='mitm.it', app_port=80, app=True))
+    thread.start_new_thread(app_master.run, ())
     serveDNS(Gateway)
     
