@@ -27,7 +27,7 @@ If you want them to be more sorted, put this in A1 instead:
 '''
 
 '''
-dependencies: mitmproxy, gspread, requests, dnslib, python-dateutil, pytz
+dependencies: mitmproxy, gspread, requests, dnslib, python-dateutil, pytz, paramiko, biplist
 '''
 import time
 import os
@@ -42,7 +42,8 @@ import socket
 # extra modules
 import gspread
 import parsemails
-
+import network
+import atexit
 """http://code.activestate.com/recipes/491264-mini-fake-dns-server/"""
 
 import sys
@@ -67,8 +68,11 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(('1.1.1.1', 0))
 Gateway = s.getsockname()[0]
 
+
+
 config_essentials = 'PADHerder Credentials'
 config_gsheets='Google Sheets Integration'
+config_jailbreak = 'Automatic iPhone DNS Setup'
 def set_defaults(config):
     
     config.add_section(config_essentials)
@@ -80,23 +84,14 @@ def set_defaults(config):
     config.set(config_gsheets,'json_key_file','')#oauth2 credentials for google drive http://gspread.readthedocs.org/en/latest/oauth2.html
     config.set(config_gsheets,'spreadsheet_name','') # spreadsheet that will be automatically updated (the first worksheet will be overwritten)
 
+    config.add_section(config_jailbreak)
+    config.set(config_jailbreak,'ssh_username','')#needs su privileges (i.e. root)
+    config.set(config_jailbreak,'ssh_password','')
+    config.set(config_jailbreak,'iphone_ip','')
+    config.set(config_jailbreak,'router_ip','')# ip of your default gateway, probably your router, probably already correct.
+    
 def get_dict(config):
-    return dict(config.items(config_essentials)+config.items(config_gsheets))
-
-Config = ConfigParser.ConfigParser()
-configfile='PADDumpConfig.ini'
-if os.path.exists(os.path.join(os.path.dirname(os.path.realpath(__file__)),configfile)):
-    with closing(open(os.path.join(os.path.dirname(os.path.realpath(__file__)),configfile),'r')) as f:
-        Config.readfp(f)
-else:
-    set_defaults(Config)
-    with closing(open(os.path.join(os.path.dirname(os.path.realpath(__file__)),configfile),'w')) as f:
-        Config.write(f)
-    print("Please enter your padherder username and password in the %s file and restart this script."%configfile)
-    time.sleep(10)
-    exit(0)
-
-CREDENTIALS = get_dict(Config)
+    return dict(config.items(config_essentials)+config.items(config_gsheets)+config.items(config_jailbreak))
 
 ####################################################
 ############## UPDATE FUNCTIONS ####################
@@ -265,6 +260,7 @@ class PadMaster(flow.FlowMaster):
                 a=[update_padherder(self.monster_data),update_mails(self.mailbox_data)]
                 self.mailbox_data=self.monster_data=None
                 if not CREDENTIALS['run_continuously'] or CREDENTIALS['run_continuously'] == '0' or CREDENTIALS['run_continuously'] == 'false' or CREDENTIALS['run_continuously'] == 'False':
+                    DNS_cleanup()
                     os._exit(0)
         return f
 
@@ -352,12 +348,44 @@ def serveDNS(hostaddr):
     except KeyboardInterrupt:
         sys.exit()
 
-    
+def DNS_cleanup():
+    if CREDENTIALS['ssh_username']:
+        print("Fixing your iPhone's DNS (requires network restart).")
+        network.change_router_ip(CREDENTIALS['iphone_ip'],CREDENTIALS['router_ip'],CREDENTIALS['ssh_username'],CREDENTIALS['ssh_password'])
+    else:
+        print("Change your phone's gateway back to its default.")
+        time.sleep(5)
+
 if __name__=='__main__':
     print('Your IP is %s'%Gateway)
+    
+    Config = ConfigParser.ConfigParser()
+    configfile='PADDumpConfig.ini'
+    if os.path.exists(os.path.join(os.path.dirname(os.path.realpath(__file__)),configfile)):
+        with closing(open(os.path.join(os.path.dirname(os.path.realpath(__file__)),configfile),'r')) as f:
+            Config.readfp(f)
+    else:
+        set_defaults(Config)
+        with closing(open(os.path.join(os.path.dirname(os.path.realpath(__file__)),configfile),'w')) as f:
+            Config.write(f)
+        print("Please enter your padherder username and password in the %s file and restart this script."%configfile)
+        time.sleep(10)
+        exit(0)
+
+
+    CREDENTIALS = get_dict(Config)
+
+    if CREDENTIALS['ssh_username']:
+        print("Restarting your phone's network adapter, please wait...")
+        network.change_router_ip(CREDENTIALS['iphone_ip'],Gateway,CREDENTIALS['ssh_username'],CREDENTIALS['ssh_password'])
+        print("Setup complete! (re)Open PAD and press start now.\n")
+    else:
+        print("Change your phone's gateway to the ip of this computer (%s), then (re)open PAD and press start."%Gateway)
+    
     app_config = proxy.ProxyConfig(port=8080, host=Gateway)
     app_server = ProxyServer(app_config)
     app_master = dump.DumpMaster(app_server, dump.Options(app_host='mitm.it', app_port=80, app=True))
     thread.start_new_thread(app_master.run, ())
+    atexit.register(DNS_cleanup)
     serveDNS(Gateway)
     
