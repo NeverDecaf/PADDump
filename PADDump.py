@@ -230,6 +230,23 @@ def launchWithoutConsole(command, args):
 if __name__=='__main__':
     if not admin.isUserAdmin():
         admin.runAsAdmin()
+
+    import thread
+    from mitmproxy import controller, proxy, flow, dump, cmdline, contentviews
+    from mitmproxy.proxy.server import ProxyServer
+    import dnsproxy
+
+    thread.start_new_thread(dnsproxy.serveDNS, (Gateway,))
+
+    app_config = proxy.ProxyConfig(port=8080, host=Gateway)
+    app_server = ProxyServer(app_config)
+    app_master = dump.DumpMaster(app_server, dump.Options(app_host='mitm.it', app_port=80, app=True))
+    thread.start_new_thread(app_master.run, ())
+
+    while 1:
+        time.sleep(1)
+    exit(0)
+        
 ##    print(" * Setting up...")
     print("\nPerforming setup tasks, close PAD on your phone while you wait.\n")
     proxy = windows.TransparentProxy(mode='forward')
