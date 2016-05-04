@@ -37,6 +37,14 @@ If you want them to be more sorted, put this in A1 instead:
 '''
 dependencies: mitmproxy, gspread
 '''
+
+try:
+    import win32api
+    win32api.SetDllDirectory(sys._MEIPASS)
+except:
+    pass
+
+
 from mitmproxy.platform import windows
 import time
 import subprocess
@@ -44,6 +52,7 @@ import os
 ##mitmdump -T -s exploit.py
 from mitmproxy.models import decoded
 ##from libmproxy.script import concurrent
+import cffi#added just for pyinstaller's sake
 
 import network
 import re
@@ -61,6 +70,7 @@ import socket
 import gspread
 import parsemails
 import admin
+
 
 ####################################################
 ################### CONFIG SETUP ###################
