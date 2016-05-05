@@ -1,5 +1,5 @@
 # PADDump
-
+You can download a windows executable [here](https://github.com/NeverDecaf/PADDump/releases/latest).
 ####First Time Setup
   1. Run PadDump once to create the config file.
   2. Fill in as much of the config as you want (description in config options below)
