@@ -203,6 +203,13 @@ class PadMaster(flow.FlowMaster):
         if f:
             f.reply()
         return f
+
+    def reset_data(self):
+        print("Update complete.")
+        self.mailbox_data=self.monster_data=None
+        if not CREDENTIALS['run_continuously'] or CREDENTIALS['run_continuously'] == '0' or CREDENTIALS['run_continuously'] == 'false' or CREDENTIALS['run_continuously'] == 'False':
+            DNS_cleanup()
+            os._exit(0)
         
     def handle_response(self, f):
         flow.FlowMaster.handle_response(self, f)
@@ -255,13 +262,9 @@ class PadMaster(flow.FlowMaster):
                 
             if self.mailbox_data and self.monster_data:
                 # turns out this doesn't really need a separate thread.
-##                thread.start_new_thread(lambda: [update_padherder(self.monster_data),update_mails(self.mailbox_data),EXIT_AFTER_ADD and os._exit(0)],())
+                thread.start_new_thread(lambda: [update_padherder(self.monster_data),update_mails(self.mailbox_data),self.reset_data()],())
 ##                self.mailbox_data=self.monster_data=None
-                a=[update_padherder(self.monster_data),update_mails(self.mailbox_data)]
-                self.mailbox_data=self.monster_data=None
-                if not CREDENTIALS['run_continuously'] or CREDENTIALS['run_continuously'] == '0' or CREDENTIALS['run_continuously'] == 'false' or CREDENTIALS['run_continuously'] == 'False':
-                    DNS_cleanup()
-                    os._exit(0)
+##                a=[update_padherder(self.monster_data),update_mails(self.mailbox_data),self.reset_data()]
         return f
 
 
