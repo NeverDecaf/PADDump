@@ -20,7 +20,7 @@ For example, if your IP is 192.168.1.20 and the default DNS was 192.168.1.1 you 
 Make sure your computer's IP is first in this list or it won't work. Don't forget the comma!  
 If you experience problems with wifi connectivity (slow/failed loading for webpages/apps) this is likely the culprit and you should revert to only one DNS at a time.  
 
->If you have a jailbroken phone, see _Automatic iPhone DNS Setup_ in the config options for a safer way to automate this process. 
+  >If you have a jailbroken phone, see _Automatic iPhone DNS Setup_ in the config options for a safer way to automate this process. 
 
 ####Config Options:
 ######[PADHerder Credentials]
