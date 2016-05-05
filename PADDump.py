@@ -205,12 +205,14 @@ class PadMaster(flow.FlowMaster):
         return f
 
     def reset_data(self):
-        print("Update complete, standing by...")
+        
         self.mailbox_data=self.monster_data=None
         if not CREDENTIALS['run_continuously'] or CREDENTIALS['run_continuously'] == '0' or CREDENTIALS['run_continuously'] == 'false' or CREDENTIALS['run_continuously'] == 'False':
             print("Update complete, shutting down...")
             DNS_cleanup()
             os._exit(0)
+        else:
+            print("Update complete, standing by...")
         
     def handle_response(self, f):
         flow.FlowMaster.handle_response(self, f)
