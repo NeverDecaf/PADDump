@@ -15,10 +15,10 @@ These instructions are for iPhone but should be similar on android devices
   5. Change the DNS field to the IP address of your computer, but take a note of what it was before.
   6. Change the DNS field back to the default once you finish using PADDump.  
 **You will need to repeat steps 5 and 6 every time you run PADDump**  
-An easy way of automating this (with possible consequences) is to *add* your computer's IP to the DNS field, rather than replacing it entirely.   
-For example, if your IP is 192.168.1.20 and the default DNS was 192.168.1.1 you want the field to read "192.168.1.20, 192.168.1.1"  
-Make sure your computer's IP is first in this list or it won't work. Don't forget the comma!  
-If you experience problems with wifi connectivity (slow/failed loading for webpages/apps) this is likely the culprit and you should revert to only one DNS at a time.  
+~~A lazy way of automating this (with consequences) is to *add* your computer's IP to the DNS field, rather than replacing it entirely.~~  
+~~For example, if your IP is 192.168.1.20 and the default DNS was 192.168.1.1 you want the field to read "192.168.1.20, 192.168.1.1"  
+Make sure your computer's IP is first in this list or it won't work. Don't forget the comma!~~  
+The above method should not be used as it causes more issues than it solves.
 
 >If you have a jailbroken phone, see _Automatic iPhone DNS Setup_ in the config options for a safer way to automate this process. 
 
