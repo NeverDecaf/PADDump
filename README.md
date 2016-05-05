@@ -9,20 +9,18 @@
 ####Initial Phone Setup
 These instructions are for iPhone but should be similar on android devices
   1. Go to Settings > Wifi > click the i > set HTTP PROXY to manual and enter your IP under server and 8080 under Port (PADDump will display your IP)
-  2. Open Safari and navigate to http://mitm.it (you must use safari, other browsers probably won't work.)
+  2. Open Safari on your phone and navigate to http://mitm.it (you must use safari, other browsers probably won't work.)
   3. Install the certificate for your device.
   4. Go back to wifi settings and turn off the HTTP Proxy.
   5. Change the DNS field to the IP address of your computer, but take a note of what it was before.
-  6. Change the DNS field back to the default once you finish using PADDump
-
-**You will need to repeat steps 5 and 6 every time you run PADDump**
-See _Automatic iPhone DNS Setup_ in the config to automate this process.  
-An easy way of automating this (with pretty severe consequences) is to *add* your computer's IP to the DNS field, rather than replacing it entirely.   
+  6. Change the DNS field back to the default once you finish using PADDump.  
+**You will need to repeat steps 5 and 6 every time you run PADDump**  
+An easy way of automating this (with possible consequences) is to *add* your computer's IP to the DNS field, rather than replacing it entirely.   
 For example, if your IP is 192.168.1.20 and the default DNS was 192.168.1.1 you want the field to read "192.168.1.20, 192.168.1.1"  
-Make sure your computer's IP is first or it won't work.  
-This method is not recommended unless you only use your device for PAD, and even then it can cause inconveniences.
+Make sure your computer's IP is first in this list or it won't work. Don't forget the comma!  
+If you experience problems with wifi connectivity (slow/failed loading for webpages/apps) this is likely the culprit and you should revert to only one DNS at a time.  
 
-
+If you have a jailbroken phone, see _Automatic iPhone DNS Setup_ in the config options for a safer way to automate this process. 
 
 ####Config Options:
 ######[PADHerder Credentials]
@@ -44,4 +42,5 @@ The one requirement is that you install "Network Commands" from cydia. (uses ifc
 You may also need to use an account with root access (not tested)  
 
 ####Tips
-You can paste/import the contents of pad_mails.csv into any spreadsheet program (including online ones)
+* You can paste/import the contents of pad_mails.csv into any spreadsheet program (including online ones)  
+* Dependencies: pip install mitmproxy gspread requests dnslib python-dateutil pytz paramiko biplist
