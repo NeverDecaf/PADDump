@@ -198,16 +198,17 @@ class PadMaster(flow.FlowMaster):
 
         f.request.host = sni or host_header
         f.request.port = port
-        print("Got HTTPS request, forwarding")        
+##        print("Got HTTPS request, forwarding")        
         flow.FlowMaster.handle_request(self, f)
         if f:
             f.reply()
         return f
 
     def reset_data(self):
-        print("Update complete.")
+        print("Update complete, standing by...")
         self.mailbox_data=self.monster_data=None
         if not CREDENTIALS['run_continuously'] or CREDENTIALS['run_continuously'] == '0' or CREDENTIALS['run_continuously'] == 'false' or CREDENTIALS['run_continuously'] == 'False':
+            print("Update complete, shutting down...")
             DNS_cleanup()
             os._exit(0)
         
@@ -261,10 +262,7 @@ class PadMaster(flow.FlowMaster):
                 print("Got mail data, processing...")
                 
             if self.mailbox_data and self.monster_data:
-                # turns out this doesn't really need a separate thread.
                 thread.start_new_thread(lambda: [update_padherder(self.monster_data),update_mails(self.mailbox_data),self.reset_data()],())
-##                self.mailbox_data=self.monster_data=None
-##                a=[update_padherder(self.monster_data),update_mails(self.mailbox_data),self.reset_data()]
         return f
 
 
@@ -329,7 +327,7 @@ class InterceptResolver(BaseResolver):
                 proxy_r = request.send(self.address,self.port,tcp=True)
             reply = DNSRecord.parse(proxy_r)
         return reply
-
+    
 def serveDNS(hostaddr):
     dnsport = 53
     resolver = InterceptResolver('8.8.8.8',
@@ -339,7 +337,8 @@ def serveDNS(hostaddr):
     try:
         udp_server = DNSServer(resolver,
                            port=dnsport,
-                           address=hostaddr)
+                           address=hostaddr,
+                           logger = DNSLogger("-send,-recv,-request,-reply,-truncated,-error", False))
     except Exception as e:
         raise
     
@@ -357,7 +356,7 @@ def DNS_cleanup():
         network.change_router_ip(CREDENTIALS['iphone_ip'],CREDENTIALS['router_ip'],CREDENTIALS['ssh_username'],CREDENTIALS['ssh_password'])
     else:
         print("Change your phone's gateway back to its default.")
-        time.sleep(5)
+        time.sleep(7)
 
 if __name__=='__main__':
     print('Your IP is %s'%Gateway)
