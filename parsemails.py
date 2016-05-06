@@ -77,6 +77,7 @@ TAMADRA_EXCEPTIONS = (
 
 
 PAD_TZ = pytz.timezone('US/Pacific')
+PAD_TZ = pytz.timezone('Etc/GMT+8') # PAD NA has chosen to ignore DST so we'll just use this static timezone until they fix it.
 LOCAL_TZ = tzlocal() # you may need to manually put your local timezone here in case your system isn't correct.
 # you also need to configure the spreadsheet you are using to match your local timezone (the one specified here)
 
