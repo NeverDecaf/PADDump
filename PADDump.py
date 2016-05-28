@@ -106,7 +106,7 @@ def update_mails(mails):
         wks = gc.open(CREDENTIALS['spreadsheet_name']).sheet1
 
         # "blank" existing cells as much as google will let us
-        cell_list = wks.range('A1:D512')#A512 if you please
+        cell_list = wks.range('A1:D512')#A512 if you want to use an arrayformula for B
     ##    cell_list+=wks.range('C1:D512')
         for cell in cell_list:
             cell.value = ''
