@@ -264,7 +264,7 @@ class PadMaster(flow.FlowMaster):
                 print("Got mail data, processing...")
                 
             if self.mailbox_data and self.monster_data:
-                thread.start_new_thread(lambda: [update_padherder(self.monster_data),update_mails(self.mailbox_data),self.reset_data()],())
+                thread.start_new_thread(lambda: update_padherder(self.monster_data) or update_mails(self.mailbox_data) or self.reset_data(),()) #this will only work while all these functions return None
         return f
 
 
