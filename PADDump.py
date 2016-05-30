@@ -205,9 +205,8 @@ class PadMaster(flow.FlowMaster):
         return f
 
     def reset_data(self):
-        
         self.mailbox_data=self.monster_data=None
-        if not CREDENTIALS['run_continuously'] or CREDENTIALS['run_continuously'] == '0' or CREDENTIALS['run_continuously'] == 'false' or CREDENTIALS['run_continuously'] == 'False':
+        if not CREDENTIALS['run_continuously'] or CREDENTIALS['run_continuously'] == '0' or str(CREDENTIALS['run_continuously']).lower() == 'false' or str(CREDENTIALS['run_continuously']).lower() == 'no':
             print("Update complete, shutting down...")
             DNS_cleanup()
             os._exit(0)
@@ -264,7 +263,8 @@ class PadMaster(flow.FlowMaster):
                 print("Got mail data, processing...")
                 
             if self.mailbox_data and self.monster_data:
-                thread.start_new_thread(lambda: update_padherder(self.monster_data) or update_mails(self.mailbox_data) or self.reset_data(),()) #this will only work while all these functions return None
+                thread.start_new_thread(lambda x,y: update_padherder(x) and None or update_mails(y),(self.monster_data,self.mailbox_data))
+                self.reset_data()
         return f
 
 
