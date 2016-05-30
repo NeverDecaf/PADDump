@@ -373,6 +373,7 @@ if __name__=='__main__':
         with closing(open(os.path.join(os.path.dirname(os.path.realpath(__file__)),configfile),'w')) as f:
             Config.write(f)
         print("Please enter your padherder username and password in the %s file and restart this script."%configfile)
+        print("Actually, this is not required. This script will still work without any of the config options set.")
         time.sleep(10)
         exit(0)
 
