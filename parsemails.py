@@ -2,6 +2,9 @@ from datetime import datetime,timedelta
 import json
 import pytz
 from dateutil.tz import tzlocal
+import requests
+import pickle
+import time
 #pip install python-dateutil pytz
 
 MONSTER_BOOK={
@@ -84,6 +87,33 @@ LOCAL_TZ = tzlocal() # you may need to manually put your local timezone here in 
 # you also need to configure the spreadsheet you are using to match your local timezone (the one specified here)
 
 
+
+def get_monster_book():
+    try:
+        with open('monster_book','rb') as f:
+            names = pickle.load(f)
+            if names['date'] == time.strftime("%x"):
+                return names
+    except:
+        pass
+    try:
+        r=requests.get('https://www.padherder.com/api/monsters/')
+        book = r.json()
+    except:
+        return MONSTER_BOOK
+    
+    names = {}
+    for mon in book:
+        names[mon['id']] = mon['name'] + (' (%iMP)'%mon['monster_points'] if mon['monster_points']>100 else '')
+    names['date'] = time.strftime("%x")
+    names[9900] = 'Coins'
+    names[9901] = 'Magic Stone'
+    names[9902] = 'Pal Points'
+    with open('monster_book','wb') as f:
+        pickle.dump(names,f)
+    return names
+
+
 def parse_mail(mail_json):
     j=json.loads(mail_json)
     res = []
@@ -100,8 +130,9 @@ def parse_mail(mail_json):
         bonus_id: the monster id of the reward contained (with special exceptions for pal points and I assume $$$, though I haven't verified that yet)
         amount: indicates various things, pal point amt, snowglobe level, does not affect + on tamadras though
     '''
+    monster_names = get_monster_book()
     for v in [i for i in j[u'mails'] if i[u'type']==3 and i[u'offered']==0]: # filter out everything except type 3 mails (assumed to be rewards), also filter out opened mailed ("offered=1")
-        item = MONSTER_BOOK.get(v[u'bonus_id'],'No.'+str(v[u'bonus_id']))
+        item = monster_names.get(v[u'bonus_id'],'No.'+str(v[u'bonus_id']))
         item += amount_case.get(v[u'amount'],' (%s)'%(v[u'amount'],))
         date = PAD_TZ.localize(datetime.strptime(v[u'date'],'%y%m%d%H%M%S')).astimezone(LOCAL_TZ)#+timezone_shift
         if v[u'sub'].startswith('Reward for completing') and v[u'bonus_id']==797: # tamadras given as rewards for challenges are always +9, this is the only way to distinguish them from normal tamas
