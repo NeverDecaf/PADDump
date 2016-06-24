@@ -5,6 +5,7 @@ from dateutil.tz import tzlocal
 import requests
 import pickle
 import time
+import os
 #pip install python-dateutil pytz
 
 MONSTER_BOOK={
@@ -86,11 +87,10 @@ PAD_TZ = pytz.timezone('Etc/GMT+8') # PAD NA has chosen to ignore DST so we'll j
 LOCAL_TZ = tzlocal() # you may need to manually put your local timezone here in case your system isn't correct.
 # you also need to configure the spreadsheet you are using to match your local timezone (the one specified here)
 
-
-
 def get_monster_book():
+    print('getting monster book')
     try:
-        with open('monster_book','rb') as f:
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),'monster_book'),'rb') as f:
             names = pickle.load(f)
             if names['date'] == time.strftime("%x"):
                 return names
@@ -109,7 +109,7 @@ def get_monster_book():
     names[9900] = 'Coins'
     names[9901] = 'Magic Stone'
     names[9902] = 'Pal Points'
-    with open('monster_book','wb') as f:
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),'monster_book'),'wb') as f:
         pickle.dump(names,f)
     return names
 

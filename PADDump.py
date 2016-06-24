@@ -24,6 +24,8 @@ py count:
 
 If you want them to be more sorted, put this in A1 instead:
 =SORT(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A=""))),LEN(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A=""))),"y","")),False,LEN(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A=""))),"J","")),False,LEN(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A=""))),"T","")),False,LEN(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(Mails!A:A,NOT(Mails!A:A="")))," ","")),True)
+heres a revised one that inclued tans
+=SORT(UNIQUE(FILTER(A:A,NOT(A:A=""))),LEN(UNIQUE(FILTER(A:A,NOT(A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(A:A,NOT(A:A=""))),"py","")),False,LEN(UNIQUE(FILTER(A:A,NOT(A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(A:A,NOT(A:A=""))),"Jewel","")),False,LEN(UNIQUE(FILTER(A:A,NOT(A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(A:A,NOT(A:A=""))),"tan","")),False,LEN(UNIQUE(FILTER(A:A,NOT(A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(A:A,NOT(A:A=""))),"TAMA","")),False)
 '''
 
 '''
@@ -97,6 +99,7 @@ def get_dict(config):
 ############## UPDATE FUNCTIONS ####################
 ####################################################
 def update_mails(mails):
+    data = parsemails.parse_mail(mails)
     if CREDENTIALS['json_key_file']:
         with closing(open(os.path.join(os.path.dirname(os.path.realpath(__file__)),CREDENTIALS['json_key_file']),'r')) as f:
             json_key = json.load(f)
@@ -116,7 +119,6 @@ def update_mails(mails):
     ##    wks.update_cell(1,2,'=ARRAYFORMULA(FLOOR(NOW()-INDIRECT("D1:D"&COUNTA(D:D)),1))')
 
         #insert the mails
-        data = parsemails.parse_mail(mails)
         flat = [item for sublist in data for item in sublist]
         cell_list = wks.range('A1:'+wks.get_addr_int(len(data),4))
 
@@ -124,12 +126,12 @@ def update_mails(mails):
             cell_list[i].value = flat[i]
 
         wks.update_cells(cell_list)
-        wks.update_acell("E1",'''=SORT(UNIQUE(FILTER(A:A,NOT(A:A=""))),LEN(UNIQUE(FILTER(A:A,NOT(A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(A:A,NOT(A:A=""))),"y","")),False,LEN(UNIQUE(FILTER(A:A,NOT(A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(A:A,NOT(A:A=""))),"J","")),False,LEN(UNIQUE(FILTER(A:A,NOT(A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(A:A,NOT(A:A=""))),"T","")),False,LEN(UNIQUE(FILTER(A:A,NOT(A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(A:A,NOT(A:A="")))," ","")),True)''')
+        wks.update_acell("E1",'''=SORT(UNIQUE(FILTER(A:A,NOT(A:A=""))),LEN(UNIQUE(FILTER(A:A,NOT(A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(A:A,NOT(A:A=""))),"py","")),False,LEN(UNIQUE(FILTER(A:A,NOT(A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(A:A,NOT(A:A=""))),"Jewel","")),False,LEN(UNIQUE(FILTER(A:A,NOT(A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(A:A,NOT(A:A=""))),"tan","")),False,LEN(UNIQUE(FILTER(A:A,NOT(A:A=""))))-LEN(SUBSTITUTE(UNIQUE(FILTER(A:A,NOT(A:A=""))),"TAMA","")),False)''')
         wks.update_acell("F1",'''=ARRAYFORMULA(COUNTIF(A:A,OFFSET(E1,0,0,COUNTA(E:E),1)))''')
         
 ##    else:
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),'pad_mails.csv'),'w') as f:
-        f.write('\n'.join([','.join(line) for line in parsemails.parse_mail(mails)]))
+        f.write('\n'.join([','.join(line) for line in data]))
 
 
 def update_padherder(json_data):
@@ -263,8 +265,7 @@ class PadMaster(flow.FlowMaster):
                 print("Got mail data, processing...")
                 
             if self.mailbox_data and self.monster_data:
-                thread.start_new_thread(lambda x,y: update_padherder(x) and None or update_mails(y),(self.monster_data,self.mailbox_data))
-                self.reset_data()
+                thread.start_new_thread(lambda x,y,z: (update_padherder(x) and None) or (update_mails(y) and None) or z(),(self.monster_data,self.mailbox_data,self.reset_data))
         return f
 
 
