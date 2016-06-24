@@ -88,7 +88,6 @@ LOCAL_TZ = tzlocal() # you may need to manually put your local timezone here in 
 # you also need to configure the spreadsheet you are using to match your local timezone (the one specified here)
 
 def get_monster_book():
-    print('getting monster book')
     try:
         with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),'monster_book'),'rb') as f:
             names = pickle.load(f)
