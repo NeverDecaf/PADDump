@@ -109,8 +109,8 @@ def update_mails(mails):
         wks = gc.open(CREDENTIALS['spreadsheet_name']).sheet1
 
         # "blank" existing cells as much as google will let us
-        cell_list = wks.range('A1:D512')#A512 if you want to use an arrayformula for B
-    ##    cell_list+=wks.range('C1:D512')
+        cell_list = wks.range('A1:C512')#A512 if you want to use an arrayformula for B
+    ##    cell_list+=wks.range('C1:C512')
         for cell in cell_list:
             cell.value = ''
         wks.update_cells(cell_list)
@@ -120,7 +120,7 @@ def update_mails(mails):
 
         #insert the mails
         flat = [item for sublist in data for item in sublist]
-        cell_list = wks.range('A1:'+wks.get_addr_int(len(data),4))
+        cell_list = wks.range('A1:'+wks.get_addr_int(len(data),3))
 
         for i in range(len(cell_list)):
             cell_list[i].value = flat[i]

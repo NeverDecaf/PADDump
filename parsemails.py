@@ -6,6 +6,7 @@ import requests
 import pickle
 import time
 import os
+import re
 #pip install python-dateutil pytz
 
 MONSTER_BOOK={
@@ -81,7 +82,7 @@ amount_case = {
 ##    (datetime(2016, 5, 27), datetime(2016, 6, 5,  23, 59, 59), ' +12'),
 ##    )
 
-
+'\+\d+$'
 
 PAD_TZ = pytz.timezone('US/Pacific')
 PAD_TZ = pytz.timezone('Etc/GMT+8') # PAD NA has chosen to ignore DST so we'll just use this static timezone until they fix it.
@@ -132,7 +133,10 @@ def parse_mail(mail_json):
     '''
     monster_names = get_monster_book()
     for v in [i for i in j[u'mails'] if i[u'type']==3 and i[u'offered']==0]: # filter out everything except type 3 mails (assumed to be rewards), also filter out opened mailed ("offered=1")
-        item = v[u'sub'] % monster_names.get(v[u'bonus_id'],'No.'+str(v[u'bonus_id']))
+        item = '%s'
+        if re.search('\+\d+$',v[u'sub']):
+            item += v[u'sub'][v[u'sub'].rfind('+'):]
+        item = item % monster_names.get(v[u'bonus_id'],'No.'+str(v[u'bonus_id']))
         item += amount_case.get(v[u'amount'],' (%s)'%(v[u'amount'],))
         date = PAD_TZ.localize(datetime.strptime(v[u'date'],'%y%m%d%H%M%S')).astimezone(LOCAL_TZ)#+timezone_shift
         res.append([item,'=FLOOR(NOW()-INDIRECT("RC[1]";0);1)',date.strftime("%m/%d/%y %H:%M:%S")])
@@ -142,7 +146,7 @@ def parse_mail(mail_json):
 
 if __name__=='__main__':
     print 'Converting to',datetime.now(LOCAL_TZ).tzname()
-    f=open('mails.json','r')
+    f=open('captured_mail.txt','r')
     a=f.read()
     f.close()
     res = parse_mail(a)
