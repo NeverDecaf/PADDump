@@ -73,12 +73,13 @@ amount_case = {
 
 
 # the times for these exceptions should be in PDT (the original pad times)
-TAMADRA_EXCEPTIONS = (
-    (datetime(2015, 11, 20), datetime(2015, 11, 29, 23, 59, 59), ' +0/30'),
-    (datetime(2015, 11, 30), datetime(2015, 12, 7,  23, 59, 59), ' +9/50'),
-    (datetime(2016, 4, 15), datetime(2016, 4, 24,  23, 59, 59), ' +18'),
-    (datetime(2016, 5, 27), datetime(2016, 6, 5,  23, 59, 59), ' +12'),
-    )
+# no longer needed due to mail update.
+##TAMADRA_EXCEPTIONS = (
+##    (datetime(2015, 11, 20), datetime(2015, 11, 29, 23, 59, 59), ' +0/30'),
+##    (datetime(2015, 11, 30), datetime(2015, 12, 7,  23, 59, 59), ' +9/50'),
+##    (datetime(2016, 4, 15), datetime(2016, 4, 24,  23, 59, 59), ' +18'),
+##    (datetime(2016, 5, 27), datetime(2016, 6, 5,  23, 59, 59), ' +12'),
+##    )
 
 
 
@@ -131,18 +132,10 @@ def parse_mail(mail_json):
     '''
     monster_names = get_monster_book()
     for v in [i for i in j[u'mails'] if i[u'type']==3 and i[u'offered']==0]: # filter out everything except type 3 mails (assumed to be rewards), also filter out opened mailed ("offered=1")
-        item = monster_names.get(v[u'bonus_id'],'No.'+str(v[u'bonus_id']))
+        item = v[u'sub'] % monster_names.get(v[u'bonus_id'],'No.'+str(v[u'bonus_id']))
         item += amount_case.get(v[u'amount'],' (%s)'%(v[u'amount'],))
         date = PAD_TZ.localize(datetime.strptime(v[u'date'],'%y%m%d%H%M%S')).astimezone(LOCAL_TZ)#+timezone_shift
-        if v[u'sub'].startswith('Reward for completing') and v[u'bonus_id']==797: # tamadras given as rewards for challenges are always +9, this is the only way to distinguish them from normal tamas
-            append = ' +9'
-            for start,end,add in TAMADRA_EXCEPTIONS:
-                start = PAD_TZ.localize(start).astimezone(LOCAL_TZ)
-                end = PAD_TZ.localize(end).astimezone(LOCAL_TZ)
-                if start <= date <= end:#if start <= date - timezone_shift <= end:
-                    append = add
-            item += append
-        res.append([item,'=FLOOR(NOW()-INDIRECT("RC[2]";0);1)',v[u'sub'].split('\n')[0],date.strftime("%m/%d/%y %H:%M:%S")])
+        res.append([item,'=FLOOR(NOW()-INDIRECT("RC[1]";0);1)',date.strftime("%m/%d/%y %H:%M:%S")])
     return res
 
 
