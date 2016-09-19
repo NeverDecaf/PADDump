@@ -93,7 +93,7 @@ def set_defaults(config):
     config.set(config_jailbreak,'iphone_ip','')
     config.set(config_jailbreak,'router_ip','')# ip of your default gateway, probably your router, probably already correct.
 
-    config.add_section(config_jailbreak)
+    config.add_section(config_padherder)
     config.set(config_jailbreak,'ignore_below','4')#leave blank for none (or just set to 99 or something)
     config.set(config_jailbreak,'delete_old','on')
     config.set(config_jailbreak,'add_new','on')
