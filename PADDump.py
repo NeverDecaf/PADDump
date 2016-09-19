@@ -75,6 +75,7 @@ Gateway = s.getsockname()[0]
 config_essentials = 'PADHerder Credentials'
 config_gsheets='Google Sheets Integration'
 config_jailbreak = 'Automatic iPhone DNS Setup'
+config_padherder = 'PADHerder Upload Options'
 def set_defaults(config):
     
     config.add_section(config_essentials)
@@ -91,9 +92,14 @@ def set_defaults(config):
     config.set(config_jailbreak,'ssh_password','')
     config.set(config_jailbreak,'iphone_ip','')
     config.set(config_jailbreak,'router_ip','')# ip of your default gateway, probably your router, probably already correct.
+
+    config.add_section(config_jailbreak)
+    config.set(config_jailbreak,'ignore_below','4')#leave blank for none (or just set to 99 or something)
+    config.set(config_jailbreak,'delete_old','on')
+    config.set(config_jailbreak,'add_new','on')
     
 def get_dict(config):
-    return dict(config.items(config_essentials)+config.items(config_gsheets)+config.items(config_jailbreak))
+    return dict(config.items(config_essentials)+config.items(config_gsheets)+config.items(config_jailbreak)+config.items(config_padherder))
 
 ####################################################
 ############## UPDATE FUNCTIONS ####################
@@ -151,13 +157,20 @@ def update_padherder(json_data):
         response = s.post(login_url, data=forms)
         csrf = csrf_token.findall(response.text)[0]
 
-        forms = {'add_new':'on',
-                 'delete_old':'on',
+        
+        
+        forms = {'add_new':CREDENTIALS['add_new'],
+                 'delete_old':CREDENTIALS['delete_old'],
                  'friends':'off',
                  'csrfmiddlewaretoken':csrf,
                  'ignore_below':'off',
                  'ignore_value':'4'}
-
+        try:
+            forms['ignore_value']=str(int(CREDENTIALS['ignore_below']))
+            forms['ignore_below']= 'on'
+        except:
+            pass
+        
         response = s.post(json_upload_url, data=forms, files={'json_file':('json.json',json_data)})
         s.close()
     else:
