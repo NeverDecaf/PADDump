@@ -94,9 +94,9 @@ def set_defaults(config):
     config.set(config_jailbreak,'router_ip','')# ip of your default gateway, probably your router, probably already correct.
 
     config.add_section(config_padherder)
-    config.set(config_jailbreak,'ignore_below','4')#leave blank for none (or just set to 99 or something)
-    config.set(config_jailbreak,'delete_old','on')
-    config.set(config_jailbreak,'add_new','on')
+    config.set(config_padherder,'ignore_below','4')#leave blank for none (or just set to 99 or something)
+    config.set(config_padherder,'delete_old','on')
+    config.set(config_padherder,'add_new','on')
     
 def get_dict(config):
     return dict(config.items(config_essentials)+config.items(config_gsheets)+config.items(config_jailbreak)+config.items(config_padherder))
