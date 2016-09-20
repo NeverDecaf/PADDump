@@ -170,7 +170,12 @@ def update_padherder(json_data):
             forms['ignore_below']= 'on'
         except:
             pass
-        
+
+        for key in forms.keys():
+            if forms[key] == 'off':
+                forms.pop(key)
+
+        print('posting with',forms)
         response = s.post(json_upload_url, data=forms, files={'json_file':('json.json',json_data)})
         s.close()
     else:
@@ -233,7 +238,7 @@ class PadMaster(flow.FlowMaster):
         if f:
             f.reply()
             if f.request.path.startswith('/api.php?action=get_player_data'):
-                print("Got box data, processing...")
+                print("Got monster data, processing...")
                 resp = f.response.content
                 type, lines = contentviews.get_content_view(
                     contentviews.get("Raw"),
@@ -252,8 +257,6 @@ class PadMaster(flow.FlowMaster):
                 cap.write(content)
                 cap.close()
                 self.monster_data = content
-                
-                update_padherder(content)
 
             if f.request.path.startswith('/api.php?action=get_user_mail'):
                 resp = f.response.content
