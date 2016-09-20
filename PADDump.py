@@ -175,7 +175,6 @@ def update_padherder(json_data):
             if forms[key] == 'off':
                 forms.pop(key)
 
-        print('posting with',forms)
         response = s.post(json_upload_url, data=forms, files={'json_file':('json.json',json_data)})
         s.close()
     else:
