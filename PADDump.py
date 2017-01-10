@@ -108,11 +108,12 @@ def get_dict(config):
 def update_mails(mails):
     data = parsemails.parse_mail(mails)
     if CREDENTIALS['json_key_file']:
-        with closing(open(os.path.join(os.path.dirname(os.path.realpath(__file__)),CREDENTIALS['json_key_file']),'r')) as f:
-            json_key = json.load(f)
+##        with closing(open(os.path.join(os.path.dirname(os.path.realpath(__file__)),CREDENTIALS['json_key_file']),'r')) as f:
+##            json_key = json.load(f)
         scope = ['https://spreadsheets.google.com/feeds']
 ##        credentials = SignedJwtAssertionCredentials(json_key['client_email'], json_key['private_key'], scope)
-        credentials = ServiceAccountCredentials(json_key['client_email'], json_key['private_key'], scope)
+##        credentials = ServiceAccountCredentials(json_key['client_email'], json_key['private_key'], scope)
+        credentials = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(os.path.dirname(os.path.realpath(__file__)),CREDENTIALS['json_key_file']), scope)
         gc = gspread.authorize(credentials)
         wks = gc.open(CREDENTIALS['spreadsheet_name']).sheet1
 
