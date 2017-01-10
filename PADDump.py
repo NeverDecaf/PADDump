@@ -37,7 +37,8 @@ import os
 import re
 from requests import session
 import json
-from oauth2client.client import SignedJwtAssertionCredentials
+##from oauth2client.client import SignedJwtAssertionCredentials
+from oauth2client.service_account import ServiceAccountCredentials
 import ConfigParser
 from contextlib import closing
 import socket
@@ -110,7 +111,8 @@ def update_mails(mails):
         with closing(open(os.path.join(os.path.dirname(os.path.realpath(__file__)),CREDENTIALS['json_key_file']),'r')) as f:
             json_key = json.load(f)
         scope = ['https://spreadsheets.google.com/feeds']
-        credentials = SignedJwtAssertionCredentials(json_key['client_email'], json_key['private_key'], scope)
+##        credentials = SignedJwtAssertionCredentials(json_key['client_email'], json_key['private_key'], scope)
+        credentials = ServiceAccountCredentials(json_key['client_email'], json_key['private_key'], scope)
         gc = gspread.authorize(credentials)
         wks = gc.open(CREDENTIALS['spreadsheet_name']).sheet1
 
