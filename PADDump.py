@@ -178,6 +178,9 @@ def update_padherder(json_data):
             if forms[key] == 'off':
                 forms.pop(key)
 
+        #quick and dirty fix for padherder not handling latents correctly ( this just remove all latents. and some other data im not sure what )
+##        json_data['card']=[m[:-2]+[0,m[-1]] for m in json_data['card']]
+        json_data = re.sub('\d*,\d*],','0,0],',json_data)
         response = s.post(json_upload_url, data=forms, files={'json_file':('json.json',json_data)})
         s.close()
     else:
